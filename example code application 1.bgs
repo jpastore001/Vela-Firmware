@@ -1,0 +1,247 @@
+dim variable(1)
+dim red
+dim blue
+dim green
+dim result
+dim intbuf(1)
+dim analog_value(1)
+dim x_int_work(9)	
+dim x_int_out(11)
+dim bat_pct
+dim batconn_handle 
+
+
+
+event system_boot(major,minor,patch,build,ll_version,protocol_version,hw)
+
+    #start advertising in connectable mode
+	call gap_set_adv_parameters(100, 100, $07)
+    call gap_set_mode(gap_general_discoverable, gap_undirected_connectable)
+	call attributes_write(c_device_name, 0, 18, "Vela SmartNecklace") #Set default name
+	call attributes_read(c_device_name, 0) #Read it so the name displays
+
+	
+	#set output for pin p1_7 (Reg), p1_6 (Power), and p1_3 (Vib module) 
+	call hardware_io_port_config_direction(1, 200)
+	call hardware_io_port_write(1, 200, 0)
+	#call hardware_io_port_write(1, 8, 0)
+	
+	#set output for pin p2_0 (Doubler)
+	call hardware_io_port_config_direction(2, 1)
+	call hardware_io_port_write(2, 1, 255)
+	
+	# channel 0 (p1_2) establishes the baseline frequency (Not sure what I did but the timer works at 62Hz, just leaving it)
+	call hardware_timer_comparator(1, 0, 6, 64000)
+	call system_endpoint_tx(5, 5, "ONN/r/n")
+
+end
+
+
+	
+procedure toInt(strng) #Procedure to convert the reciverd string to the RGB integers
+	result = 0
+	intbuf(0:3)=strng
+	if intbuf(0:1)="1"
+		result =result + 100
+	end if
+	if intbuf(0:1)="2"
+		result =result + 200
+	end if
+	if intbuf(0:1)="0"
+		result =result + 0
+	end if
+	if intbuf(1:1)="1"
+		result =result + 10
+	end if
+	if intbuf(1:1)="2"
+		result =result + 20
+	end if
+	if intbuf(1:1)="3"
+		result =result + 30
+	end if
+	if intbuf(1:1)="4"
+		result =result + 40
+	end if
+	if intbuf(1:1)="5"
+		result =result + 50
+	end if
+	if intbuf(1:1)="6"
+		result =result + 60
+	end if
+	if intbuf(1:1)="7"
+		result =result + 70
+	end if
+	if intbuf(1:1)="8"
+		result =result + 80
+	end if
+	if intbuf(1:1)="9"
+		result =result + 90
+	end if
+	if intbuf(1:1)="0"
+		result =result + 0
+	end if
+	if intbuf(2:1)="1"
+		result =result + 1
+	end if
+	if intbuf(2:1)="2"
+		result =result + 2
+	end if
+	if intbuf(2:1)="3"
+		result =result + 3
+	end if
+	if intbuf(2:1)="4"
+		result =result + 4
+	end if
+	if intbuf(2:1)="5"
+		result =result + 5
+	end if
+	if intbuf(2:1)="6"
+		result =result + 6
+	end if
+	if intbuf(2:1)="7"
+		result =result + 7
+	end if
+	if intbuf(2:1)="8"
+		result =result + 8
+	end if
+	if intbuf(2:1)="9"
+		result =result + 9
+	end if
+	if intbuf(2:1)="0"
+		result =result + 0
+	end if
+end
+	
+
+
+procedure print_uint31(endpoint, num) #Procedure used to convert integers back to ASCII for debugging
+    x_int_work(0:1) = "\x00"
+    x_int_work(1:4)= num
+	if x_int_work(1:4)= 0 then
+        x_int_out(10- x_int_work(0:1):1) ="0" # already zero, so just use it
+       x_int_work(0:1) = x_int_work(0:1) + 1# string length increment
+	else
+		while x_int_work(1:4) > 0
+			x_int_work(5:4) =(x_int_work(1:4) / 10) *10 # create "decimal mask" for diff calc
+            x_int_out(10 - x_int_work(0:1):1) = x_int_work(1:4) - x_int_work(5:4)+ $30# next digit
+            x_int_work(0:1) = x_int_work(0:1) + 1 # string length increment
+            x_int_work(1:4) = x_int_work(1:4) / 10 # shift next decimal place over
+        end while
+    end if
+   call system_endpoint_tx(endpoint, x_int_work(0:1), x_int_out(11- x_int_work(0:1):x_int_work(0:1)))
+end	
+	
+	
+	
+	
+	
+	
+event attributes_value(connection, reason, handle, offset, value_len, value_data)
+	if value_len = 9 then #How long the RGB string is (9)
+		if handle = c_analog_output then #RGB Service
+			red = value_data(0:3)  #\
+			blue = value_data(6:3) #-> Pull the individual RGB values from the String 
+			green = value_data(3:3)#/
+			call toInt(red) #Convert the r string to an integer
+			red = result
+			call toInt(green) #Convert the g string to an integer
+			green = result
+			call toInt(blue) #Convert the b string to an integer
+			blue = result
+			blue = blue*250 #Scaling
+			red = red*250 #Scaling
+			green = green*250 #Scaling
+			call hardware_timer_comparator(1, 4, 6, blue) #blue pwm
+			call hardware_timer_comparator(1, 2, 6, green) #green pwm
+			call hardware_timer_comparator(1, 1, 6, red) #red pwm
+			analog_value(0:9) = value_data(0:9)
+		end if
+	end if
+	if value_len = 1 then
+			if value_data(0:1)="D" then
+			#turn on doubler
+			call hardware_io_port_write(2,1,1)
+			end if
+			
+			if value_data(0:1)="d" then
+			#turn off doubler
+			call hardware_io_port_write(2,1,0)
+			end if
+			
+			if value_data(0:1)="E" then
+			#turn on regulator
+			call hardware_io_port_write(1,128,255)
+			end if
+			
+			if value_data(0:1)="e" then
+			#turn off regulator
+			call hardware_io_port_write(1,128,0)
+			end if
+			
+			if value_data(0:1)="P" then
+			#turn on power
+			call hardware_io_port_write(1,64,255)
+			end if
+			
+			if value_data(0:1)="p" then
+			#turn off power
+			call hardware_io_port_write(1,64,0)
+			end if
+			
+			if value_data(0:1)="V" then
+			#turn on power
+			call hardware_io_port_write(1,200,8)
+			end if
+			
+			if value_data(0:1)="v" then
+			#turn off power
+			call hardware_io_port_write(1,200,0)
+			end if
+		end if
+	call attributes_user_write_response(connection,0)
+end
+
+event attributes_user_read_request(connection, handle, offset, maxsize)
+	
+	if handle = c_analog_output then
+		call attributes_user_read_response(connection, 0, 9, analog_value(0:9))
+	end if
+	if handle = c_vbat
+		batconn_handle = connection 
+		# Request ADC read operation
+		#   15 = AVDD/3 channel (will be between 0.66v - 1.2v by definition)
+		#   3 = 12 effective bits, range = [-2048, +2047] when right-aligned
+		#   0 = internal 1.24V reference
+		call hardware_adc_read(15, 3, 0) 
+			# Request ADC read operation
+		#   15 = AVDD/3 channel (will be between 0.66v - 1.2v by definition)
+		#   3 = 12 effective bits, range = [-2048, +2047] when right-aligned
+		#   0 = internal 1.24V reference
+	end if
+end
+
+dim VDDvoltage
+
+event hardware_adc_result(input, value)
+	VDDvoltage = (value >> 4) * 3 * 1.24 / 2048
+	call print_uint31( 5, VDDvoltage)
+    bat_pct = (value - 25544) * 100 / (32767 - 25544)
+	
+    # enforce 0%/100% bounds
+    if bat_pct > 100 then
+		bat_pct = 100
+	end if
+    if bat_pct < 0 then
+		bat_pct = 0
+	end if
+	
+    # respond with calculated percent (connection=stored value, result=0, length=1, data=bat_pct)
+    call attributes_user_read_response(batconn_handle, 0, 1, bat_pct)
+end
+
+event connection_disconnected(handle,rsult)
+
+    #start advertising again after disconnection
+    call gap_set_mode(gap_general_discoverable,gap_undirected_connectable)
+	
+end

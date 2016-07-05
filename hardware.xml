@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<hardware>
+    <sleeposc enable="true" ppm="30" />
+    <usb enable="false" />
+	<sleep enable="false" />
+    <txpower power="15" bias="5" />
+    <script enable="true" />
+	<usart channel="1" alternate="1" baud="57600"  endpoint="none" />
+	<pmux regulator_pin="7" />
+    <port index="0" tristatemask="0" pull="down" />
+    <port index="1" tristatemask="0" pull="down" />
+    <port index="2" tristatemask="0" pull="down" />
+	<timer index ="1" enabled_channels ="0x1f" divisor ="1" mode ="2" alternate ="2" />
+</hardware>

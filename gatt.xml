@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+
+    <service uuid="1800">
+      <description>Generic Access Profile</description>
+
+      <characteristic uuid="2a00" id="c_device_name">
+        <properties read="true" write="true" />
+        <value>Vela SmartNecklace</value>
+      </characteristic>
+
+      <characteristic uuid="2a01">
+        <properties read="true" const="true" />
+        <value type="hex">0000</value>
+      </characteristic>
+    </service>
+
+    <service uuid="92ea04d1-e07e-4ece-bbbc-ca1450de6bbd" advertise="true">
+        
+        <characteristic uuid="866ad1ee-05c4-4f4e-9ef4-548790668ad1" id="c_analog_output">
+			<description>Analog Output Value</description>
+            <properties read="true" write="true"  />
+            <value length="9" type="user" />
+        </characteristic>
+		
+        <characteristic uuid="982754c4-fbde-4d57-a01b-6c81f2f0499e" id="c_vbat">
+			<description>Battery</description>
+            <properties read="true" write="true"/>
+            <value length="5" type="user" />
+        </characteristic>
+    </service>
+</configuration>
