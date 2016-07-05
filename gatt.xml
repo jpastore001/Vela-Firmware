@@ -25,7 +25,7 @@
 		
         <characteristic uuid="982754c4-fbde-4d57-a01b-6c81f2f0499e" id="c_vbat">
 			<description>Battery</description>
-            <properties read="true" write="true"/>
+            <properties read="true" />
             <value length="5" type="user" />
         </characteristic>
     </service>
