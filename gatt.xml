@@ -29,4 +29,23 @@
             <value length="5" type="user" />
         </characteristic>
     </service>
+    
+    <service uuid="1d14d6ee-fd63-4fa1-bfa4-8f47b42119f0">
+       	<description>Bluegiga OTA Service</description>
+        
+        <!-- Standard OTA endpoints -->
+        <characteristic uuid="f7bf3564-fb6d-4e53-88a4-5e37e0326063" id="ota_control">
+            <properties write="true" />
+            <value length="1" type="user" />
+            <description>OTA Control Point Attribute</description>
+        </characteristic>
+        
+        <characteristic uuid="984227f3-34fc-4045-a5d0-2c581f81a153" id="ota_data">
+            <properties write_no_response="true" />
+            <value length="23" />
+            <description>OTA Data Attribute</description>
+        </characteristic>
+ 
+    </service> 
+    
 </configuration>
