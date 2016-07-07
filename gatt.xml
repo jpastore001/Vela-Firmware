@@ -17,6 +17,12 @@
 
     <service uuid="92ea04d1-e07e-4ece-bbbc-ca1450de6bbd" advertise="true">
         
+        <characteristic uuid="7cb42fb8-d3a1-42c2-9e78-12b8148cd5d9" id="c_notify_alert">
+        	<description>Notification Alert</description>
+           <properties read="true" />
+           <value length="5" type="user" />
+        </characteristic>
+        
         <characteristic uuid="866ad1ee-05c4-4f4e-9ef4-548790668ad1" id="c_analog_output">
 			<description>Analog Output Value</description>
             <properties read="true" write="true"  />
