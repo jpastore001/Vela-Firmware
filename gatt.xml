@@ -17,6 +17,12 @@
 
     <service uuid="92ea04d1-e07e-4ece-bbbc-ca1450de6bbd" advertise="true">
         
+        <characteristic uuid="7ae76ac1-dad3-4f1f-86ab-77d7fd73de37" id="c_brightness">
+			<description>LED Brightness Level</description>
+            <properties read="true" write="true" />
+            <value length="5" type="user" />
+        </characteristic>
+        
         <characteristic uuid="866ad1ee-05c4-4f4e-9ef4-548790668ad1" id="c_analog_output">
 			<description>Analog Output Value</description>
             <properties read="true" write="true"  />
